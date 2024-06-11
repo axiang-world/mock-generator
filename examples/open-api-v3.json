@@ -1,0 +1,895 @@
+{
+    "openapi": "3.0.0",
+    "paths": {
+        "/api/user/create": {
+            "post": {
+                "operationId": "UserController_create",
+                "summary": "创建用户",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["用户管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/user/list": {
+            "get": {
+                "operationId": "UserController_getList",
+                "summary": "获取用户列表",
+                "parameters": [
+                    {
+                        "name": "sortOrder",
+                        "required": false,
+                        "in": "query",
+                        "description": "升序 或者 降序",
+                        "schema": {
+                            "enum": ["asc", "desc"],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "skip",
+                        "required": true,
+                        "in": "query",
+                        "description": "偏移值",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "take",
+                        "required": true,
+                        "in": "query",
+                        "description": "获取多少个项",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "searchText",
+                        "required": false,
+                        "in": "query",
+                        "description": "查询参数",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortName",
+                        "required": true,
+                        "in": "query",
+                        "description": "需要排序的值",
+                        "schema": {
+                            "enum": ["id", "account", "nickname", "createdAt", "updatedAt"],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "searchType",
+                        "required": true,
+                        "in": "query",
+                        "description": "搜索值，支持模糊搜索",
+                        "schema": {
+                            "enum": ["id", "account", "nickname"],
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": ["用户管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/user/getOne": {
+            "get": {
+                "operationId": "UserController_findOne",
+                "summary": "获取单个用户信息",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "query",
+                        "description": "id，整数",
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": ["用户管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/user/update": {
+            "post": {
+                "operationId": "UserController_update",
+                "summary": "更新用户",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateUserDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["用户管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/user/delete": {
+            "post": {
+                "operationId": "UserController_remove",
+                "summary": "删除用户",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "query",
+                        "description": "id，整数",
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["用户管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/user/updatePassword": {
+            "post": {
+                "operationId": "UserController_updatePassword",
+                "summary": "更新密码",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdatePasswordDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["用户管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "operationId": "AuthController_login",
+                "summary": "登录接口",
+                "parameters": [
+                    {
+                        "name": "user-agent",
+                        "required": true,
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginRes"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": ["验证模块"]
+            }
+        },
+        "/api/auth/refreshToken": {
+            "post": {
+                "operationId": "AuthController_refreshToken",
+                "summary": "更新accessToken",
+                "parameters": [
+                    {
+                        "name": "user-agent",
+                        "required": true,
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["验证模块"]
+            }
+        },
+        "/api/auth/captcha": {
+            "get": {
+                "operationId": "AuthController_captchaByImg",
+                "summary": "获取登录图片验证码",
+                "parameters": [
+                    {
+                        "name": "width",
+                        "required": false,
+                        "in": "query",
+                        "description": "验证码宽度",
+                        "schema": {
+                            "default": 100,
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "height",
+                        "required": false,
+                        "in": "query",
+                        "description": "验证码高度",
+                        "schema": {
+                            "default": 50,
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImageCaptcha"
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": ["验证模块"]
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "operationId": "AuthController_logout",
+                "summary": "登出接口",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["验证模块"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/create": {
+            "post": {
+                "operationId": "RolesController_create",
+                "summary": "创建角色",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRoleDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/info": {
+            "get": {
+                "operationId": "RolesController_getDefaultInfo",
+                "summary": "获取默认角色信息",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/list": {
+            "get": {
+                "operationId": "RolesController_getList",
+                "summary": "获取角色列表",
+                "parameters": [
+                    {
+                        "name": "sortOrder",
+                        "required": false,
+                        "in": "query",
+                        "description": "升序 或者 降序",
+                        "schema": {
+                            "enum": ["asc", "desc"],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "skip",
+                        "required": true,
+                        "in": "query",
+                        "description": "偏移值",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "take",
+                        "required": true,
+                        "in": "query",
+                        "description": "获取多少个项",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "searchText",
+                        "required": false,
+                        "in": "query",
+                        "description": "查询参数",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sortName",
+                        "required": true,
+                        "in": "query",
+                        "description": "需要排序的值",
+                        "schema": {
+                            "enum": ["name", "createdAt", "updatedAt"],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "searchType",
+                        "required": true,
+                        "in": "query",
+                        "description": "搜索值，支持模糊搜索",
+                        "schema": {
+                            "enum": ["name"],
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/all": {
+            "get": {
+                "operationId": "RolesController_findAll",
+                "summary": "获取全部角色",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/getOne": {
+            "get": {
+                "operationId": "RolesController_findOne",
+                "summary": "获取角色详情",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "required": true,
+                        "in": "query",
+                        "description": "id，整数",
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/update": {
+            "post": {
+                "operationId": "RolesController_update",
+                "summary": "更新角色",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateRoleDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/roles/delete": {
+            "post": {
+                "operationId": "RolesController_remove",
+                "summary": "删除角色",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IdDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["角色管理"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/upload/chunk": {
+            "post": {
+                "operationId": "UploadController_uploadFile",
+                "summary": "切片文件上传",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FileUploadDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["文件上传"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/upload/merge": {
+            "post": {
+                "operationId": "UploadController_mergeFile",
+                "summary": "文件合并",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MergeFileDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": ["文件上传"],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "backend demo api doc",
+        "description": "backend demo api doc",
+        "version": "1.0",
+        "contact": {}
+    },
+    "tags": [],
+    "servers": [],
+    "components": {
+        "securitySchemes": {
+            "bearer": {
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "type": "http"
+            }
+        },
+        "schemas": {
+            "CreateUserDto": {
+                "type": "object",
+                "properties": {
+                    "account": {
+                        "type": "string",
+                        "minLength": 6,
+                        "maxLength": 16,
+                        "description": "帐号，需要唯一"
+                    },
+                    "nickname": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 16,
+                        "description": "昵称"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 16,
+                        "description": "密码"
+                    },
+                    "level": {
+                        "type": "string",
+                        "description": "用户等级",
+                        "enum": ["USER", "ADMIN"]
+                    },
+                    "roleId": {
+                        "type": "number",
+                        "description": "用户角色"
+                    }
+                },
+                "required": ["account", "nickname", "password", "level"]
+            },
+            "UpdateUserDto": {
+                "type": "object",
+                "properties": {
+                    "nickname": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 16,
+                        "description": "昵称"
+                    },
+                    "level": {
+                        "type": "string",
+                        "description": "用户等级",
+                        "enum": ["USER", "ADMIN"]
+                    },
+                    "roleId": {
+                        "type": "number",
+                        "description": "用户角色"
+                    },
+                    "id": {
+                        "type": "number"
+                    }
+                },
+                "required": ["id"]
+            },
+            "UpdatePasswordDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "number",
+                        "description": "id，整数"
+                    },
+                    "oldPassword": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 16,
+                        "description": "旧密码"
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 16,
+                        "description": "新密码"
+                    }
+                },
+                "required": ["id", "oldPassword", "newPassword"]
+            },
+            "LoginDto": {
+                "type": "object",
+                "properties": {
+                    "account": {
+                        "type": "string",
+                        "minLength": 4,
+                        "maxLength": 16,
+                        "description": "帐号",
+                        "example": "cacaca"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 6,
+                        "maxLength": 32,
+                        "description": "密码",
+                        "example": "ccc,./123"
+                    },
+                    "captchaId": {
+                        "type": "string",
+                        "description": "验证码标识"
+                    },
+                    "verifyCode": {
+                        "type": "string",
+                        "minLength": 4,
+                        "maxLength": 4,
+                        "description": "用户输入的验证码"
+                    }
+                },
+                "required": ["account", "password", "captchaId", "verifyCode"]
+            },
+            "LoginRes": {
+                "type": "object",
+                "properties": {
+                    "accessToken": {
+                        "type": "string",
+                        "description": "资源访问token"
+                    },
+                    "refreshToken": {
+                        "type": "string",
+                        "description": "令牌刷新token"
+                    }
+                },
+                "required": ["accessToken", "refreshToken"]
+            },
+            "ImageCaptcha": {
+                "type": "object",
+                "properties": {
+                    "img": {
+                        "type": "string",
+                        "description": "base64格式的svg图片"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "验证码对应的唯一ID"
+                    }
+                },
+                "required": ["img", "id"]
+            },
+            "CreateRoleDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 32,
+                        "description": "角色名"
+                    },
+                    "permissions": {
+                        "description": "权限列表",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "required": ["name", "permissions"]
+            },
+            "UpdateRoleDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 32,
+                        "description": "角色名"
+                    },
+                    "permissions": {
+                        "description": "权限列表",
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "id": {
+                        "type": "number"
+                    }
+                },
+                "required": ["name", "permissions", "id"]
+            },
+            "IdDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "number",
+                        "description": "id，整数"
+                    }
+                },
+                "required": ["id"]
+            },
+            "FileUploadDto": {
+                "type": "object",
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "description": "文件",
+                        "format": "binary"
+                    },
+                    "id": {
+                        "type": "string",
+                        "example": "3e4a9f76-2cc1-454a-af5c-d76acb8714e4",
+                        "description": "唯一标识ID，用UUID生成"
+                    },
+                    "index": {
+                        "type": "string",
+                        "example": "b387b01d-c81e-452f-8a27-19fb98b08d7a",
+                        "description": "当前切片顺序，后续合并文件会按此顺序进行合并"
+                    }
+                },
+                "required": ["file", "id", "index"]
+            },
+            "MergeFileDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "20eef9d8-2287-49c5-991a-2d2afb65ee93",
+                        "description": "需要合并的文件的ID"
+                    },
+                    "hash": {
+                        "type": "string",
+                        "description": "文件的md5 hash，用于校验文件完整性"
+                    },
+                    "filename": {
+                        "type": "string",
+                        "description": "文件名，存数据库的文件名，出于安全考虑文件不会以这个文件名去保存到服务器"
+                    }
+                },
+                "required": ["id", "hash", "filename"]
+            }
+        }
+    }
+}
