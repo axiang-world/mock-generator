@@ -1,22 +1,23 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "strict": true,
         "declaration": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": true,
+        "esModuleInterop": true,
+        "useUnknownInCatchVariables": false,
+        "lib": ["ES2023"], // DOM because we have client code that gets inlined via function.toString()
+        "stripInternal": true,
         "removeComments": true,
-        "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
-        "target": "ES2021",
-        "sourceMap": true,
-        "outDir": "./dist",
         "baseUrl": "./",
-        "incremental": true,
+        "checkJs": false,
         "skipLibCheck": true,
-        "strictNullChecks": false,
-        "noImplicitAny": false,
-        "strictBindCallApply": false,
-        "forceConsistentCasingInFileNames": false,
-        "noFallthroughCasesInSwitch": false
+        "strictNullChecks": true,
+        "resolveJsonModule": true
     },
-    "include": ["packages/*/src"]
+    "include": ["packages/*/src", "packages/*/rollup.config.ts", "packages/generator/scripts/*"]
 }

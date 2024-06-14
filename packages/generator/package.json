@@ -1,10 +1,26 @@
 {
-    "name": "generator",
+    "name": "mock-generator",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "bin": {
+        "mock-gen": "bin/index.js"
+    },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "dev": "tsx ./scripts/dev.ts",
+        "mock-gen": "npm link --force && mock-gen",
+        "build": "rimraf dist && run-s build-bundle",
+        "build-bundle": "rollup --config rollup.config.ts --configPlugin esbuild"
+    },
+    "devDependencies": {
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "consola": "^3.2.3",
+        "esbuild": "^0.21.5",
+        "rollup": "^4.18.0",
+        "rollup-plugin-esbuild": "^6.1.1"
     },
     "keywords": [],
     "author": "",
