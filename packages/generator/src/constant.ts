@@ -5,11 +5,14 @@ export const DEFAULT_CONFIG_FILES = [
     'mock-gen.config.mts',
 ]
 
+export enum OpenApiVersion {
+    V1 = 'V1',
+    V2 = 'V2',
+    V3 = 'V3',
+}
+
 export const DEFAULT_CONFIG = {
-    version: 'v3',
     includes: [],
     excludes: [],
     typeDir: '',
 }
-
-export const DEFAULT_EXTENSIONS = ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']

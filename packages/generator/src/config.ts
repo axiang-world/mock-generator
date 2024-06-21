@@ -6,6 +6,7 @@ import { build } from 'esbuild'
 import { pathToFileURL } from 'node:url'
 import { writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
+import { ApiList } from './types'
 
 export interface UserConfig {
     /**
@@ -15,24 +16,18 @@ export interface UserConfig {
     file: string
 
     /**
-     * openapi 版本
-     * @default v3
-     */
-    version?: 'v3' | 'v2' | 'v1'
-
-    /**
      * 指定同步哪些api，如果为空则同步全部。可以是正则表达式
      * @default []
      */
 
-    includes?: string[]
+    includes?: ApiList
 
     /**
      * 指定忽略哪些api，如果为空则同步全部。可以是正则表达式
      * 如果和includes产生交集，则以excludes的优先级更高
      * @default []
      */
-    excludes?: string[]
+    excludes?: ApiList
 
     /**
      * 是否增量同步

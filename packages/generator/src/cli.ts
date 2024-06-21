@@ -1,7 +1,10 @@
-import { resolveConfig } from './configs'
+import { resolveConfig } from './config'
+import { parseFile } from './parser'
 
 async function start() {
-    await resolveConfig()
+    const config = await resolveConfig()
+    const apiMap = await parseFile(config)
+    console.log(apiMap)
 }
 
 start()
