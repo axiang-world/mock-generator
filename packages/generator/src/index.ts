@@ -1,2 +1,2 @@
-export { defineConfig, resolveConfig } from './config'
+export { defineConfig } from './config'
 export type { UserConfig } from './config'
