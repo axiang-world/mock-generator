@@ -26,5 +26,14 @@ module.exports = {
                 ...Prettierrc,
             },
         ],
+        '@typescript-eslint/ban-types': [
+            'error',
+            {
+                types: {
+                    '{}': false,
+                },
+                extendDefaults: true,
+            },
+        ],
     },
 }
