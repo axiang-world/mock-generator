@@ -4,18 +4,22 @@ import { filterPaths } from './utils'
 import consola from 'consola'
 import SwaggerParser from '@apidevtools/swagger-parser'
 
-type Schemas = OpenAPIV3.SchemaObject | OpenAPIV3_1.SchemaObject
-type ComponentSchemas = Schemas | OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject
+type ReferenceObject = OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject
+type PathsObject = OpenAPIV3.PathsObject<{}, {}> | OpenAPIV3_1.PathsObject<{}, {}>
+type ComponentsObject = OpenAPIV3.ComponentsObject | OpenAPIV3_1.ComponentsObject
+type PathItemObject = OpenAPIV3.PathItemObject | OpenAPIV3_1.PathItemObject
+type SchemaObject = OpenAPIV3.SchemaObject | OpenAPIV3_1.SchemaObject
+type SchemasOrReference = SchemaObject | ReferenceObject
 type Responses = OpenAPIV3.ResponseObject | OpenAPIV3_1.ResponseObject
-// type ComponentResponses = Responses | OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject
-type Parameters = OpenAPIV3.ParameterObject
-// type ComponentParameters = Parameters | OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject
+// type ComponentResponses = Responses | ReferenceObject
+type Parameters = OpenAPIV3.ParameterObject | OpenAPIV3_1.ParameterObject
+type ParametersOrReference = Parameters | ReferenceObject
 type Examples = OpenAPIV3.ExampleObject
-// type ComponentExamples = Examples | OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject
+// type ComponentExamples = Examples | ReferenceObject
 type RequestBodies = OpenAPIV3.RequestBodyObject | OpenAPIV3_1.RequestBodyObject
-// type ComponentRequestBodies = RequestBodies | OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject
+// type ComponentRequestBodies = RequestBodies | ReferenceObject
 
-type RefType = Schemas | Responses | Parameters | Examples | RequestBodies
+type RefType = SchemaObject | Responses | Parameters | Examples | RequestBodies | PathItemObject
 type RefMap = Map<string, RefType>
 
 enum ComponentType {
@@ -23,25 +27,23 @@ enum ComponentType {
     RESPONSES = 'responses',
     PARAMETERS = 'parameters',
     EXAMPLES = 'examples',
-    REQUESTBODIES = 'requestBodies',
+    REQUEST_BODIES = 'requestBodies',
 }
 
 export class OpenAPIV3Parser {
-    private paths: OpenAPIV3.PathsObject<{}, {}> | OpenAPIV3_1.PathsObject<{}, {}>
-    private components: OpenAPIV3.ComponentsObject | OpenAPIV3_1.ComponentsObject
-    private filteredPathSet: Set<string> // 筛选后的路径
-    private isV3_1: boolean // 是否3.1版本
+    private readonly paths: PathsObject
+    private readonly filteredPathSet: Set<string> // 筛选后的路径
+    private readonly isV3_1: boolean // 是否3.1版本
 
     constructor(
         private readonly doc: OpenAPIV3.Document | OpenAPIV3_1.Document,
         includes: ApiList | undefined,
         excludes: ApiList | undefined,
     ) {
-        const { paths, components, openapi } = doc
+        const { paths, openapi } = doc
 
         this.isV3_1 = openapi.startsWith('3.1')
         this.paths = paths ?? {}
-        this.components = components ?? {}
         this.filteredPathSet = filterPaths(Object.keys(this.paths), includes, excludes)
 
         this.start()
@@ -51,24 +53,27 @@ export class OpenAPIV3Parser {
         consola.info('开始解析openapi文档')
 
         const result = {} as OpenAPIV3.PathsObject<{}, {}> | OpenAPIV3_1.PathsObject<{}, {}>
-        console.log(result)
+        console.log(result, this.isV3_1)
 
         Object.entries(this.paths).forEach(async ([path, pathItem]) => {
             if (!pathItem || !this.filteredPathSet.has(path)) {
                 return
             }
 
-            const { $ref, parameters, ...httpMethodObj } = pathItem
-            console.log(httpMethodObj, parameters)
-            let ref = {} as RefType
-            if ($ref) {
-                ref = await this.getRef($ref)
+            const finalPathItem = pathItem.$ref ? ((await this.getRef(pathItem.$ref)) as PathItemObject) : pathItem
+            const { parameters, ...httpMethodObj } = finalPathItem
+
+            const commonParameters: Parameters[] = []
+
+            for (const item of parameters ?? []) {
+                const parameter = this.handlerParameter(item)
+                console.log(commonParameters, parameter, httpMethodObj)
             }
-            console.log(ref)
         })
     }
 
     private refCache: RefMap = new Map()
+
     private async getRef(ref: string): Promise<RefType> {
         if (this.refCache.has(ref)) {
             return this.refCache.get(ref) as RefType
@@ -79,23 +84,33 @@ export class OpenAPIV3Parser {
         if (match) {
             const [, docPath, paths] = match
             const doc = await this.getRefDoc(docPath)
-            console.log(paths, doc, this.isV3_1)
+            const [docKey, pathItemOrComponentKey, itemKey] = paths.split('/')
 
-            const [, componentType, path] = match as [any, ComponentType, string]
-            let refObj: RefType
-            switch (componentType) {
-                case ComponentType.SCHEMAS:
-                    refObj = this.getSchemaRef(path)
-                case ComponentType.REQUESTBODIES:
-                    refObj = this.getRequestBodiesRef(path)
-                case ComponentType.RESPONSES:
-                    refObj = this.getResponseRef(path)
-                case ComponentType.PARAMETERS:
-                    refObj = this.getParameterRef(path)
-                case ComponentType.EXAMPLES:
-                    refObj = this.getExampleRef(path)
-                default:
-                    refObj = {}
+            let refObj: RefType = {}
+
+            if (docKey === 'paths') {
+                refObj = {}
+            } else if (docKey === 'components') {
+                const components = doc.components ?? {}
+                switch (pathItemOrComponentKey) {
+                    case ComponentType.SCHEMAS:
+                        refObj = await this.getSchemaRef(components, itemKey)
+                        break
+                    case ComponentType.REQUEST_BODIES:
+                        refObj = this.getRequestBodiesRef(itemKey)
+                        break
+                    case ComponentType.RESPONSES:
+                        refObj = this.getResponseRef(itemKey)
+                        break
+                    case ComponentType.PARAMETERS:
+                        refObj = this.getParameterRef(itemKey)
+                        break
+                    case ComponentType.EXAMPLES:
+                        refObj = this.getExampleRef(itemKey)
+                        break
+                    default:
+                        refObj = {}
+                }
             }
             this.refCache.set(ref, refObj)
             return refObj
@@ -133,6 +148,21 @@ export class OpenAPIV3Parser {
         return {} as RefType
     }
 
+    private async handlerParameter(parameter: ParametersOrReference): Promise<Parameters> {
+        if ('$ref' in parameter) {
+            return (await this.getRef(parameter.$ref)) as Parameters
+        }
+
+        const { schema, examples, content } = parameter
+
+        const _schema = schema ? await this.handlerSchemas(schema) : undefined
+        console.log(examples, content)
+        return {
+            ...parameter,
+            schema: _schema as Parameters['schema'],
+        }
+    }
+
     private getResponseRef(path: string) {
         console.log(path)
         return {} as RefType
@@ -143,49 +173,48 @@ export class OpenAPIV3Parser {
         return {} as RefType
     }
 
-    private getSchemaRef(path: string): Schemas {
-        const schema = this.components.schemas?.[path]
+    private async getSchemaRef(components: ComponentsObject, path: string): Promise<SchemaObject> {
+        const schema = components.schemas?.[path]
 
         if (!schema) {
-            return {} as Schemas
+            return {} as SchemaObject
         }
 
-        const getRef = this.getRef
-        function processRecursiveSchemas(obj: ComponentSchemas): Schemas {
-            if ('$ref' in obj) {
-                return getRef(obj.$ref) as Schemas
-            }
+        return await this.handlerSchemas(schema)
+    }
 
-            const res = {} as Record<string, any>
-            const arrayProperties = ['allOf', 'oneOf', 'anyOf']
+    async handlerSchemas(schema: SchemasOrReference): Promise<SchemaObject> {
+        if ('$ref' in schema) {
+            return (await this.getRef(schema.$ref)) as SchemaObject
+        }
 
-            Object.entries(obj).forEach(([key, value]) => {
-                if (arrayProperties.includes(key)) {
-                    res[key] = (value as ComponentSchemas[]).map((item) => processRecursiveSchemas(item))
-                } else if (key === 'additionalProperties') {
-                    if (typeof value === 'boolean') {
-                        res[key] = value
-                    } else {
-                        res[key] = processRecursiveSchemas(value)
-                    }
-                } else if (key === 'not') {
-                    res[key] = processRecursiveSchemas(value)
-                } else if (key === 'properties') {
-                    res[key] = Object.entries(value).reduce(
-                        (properties, [name, property]) => {
-                            properties[name] = processRecursiveSchemas(property as ComponentSchemas)
-                            return properties
-                        },
-                        {} as Record<string, Schemas>,
-                    )
-                } else {
+        const res = {} as Record<string, any>
+        const arrayProperties = ['allOf', 'oneOf', 'anyOf']
+
+        for (const [key, value] of Object.entries(schema)) {
+            if (arrayProperties.includes(key)) {
+                res[key] = (value as SchemasOrReference[]).map((item) => this.handlerSchemas(item))
+            } else if (key === 'additionalProperties') {
+                if (typeof value === 'boolean') {
                     res[key] = value
+                } else {
+                    res[key] = this.handlerSchemas(value)
                 }
-            })
+            } else if (key === 'not' || key === 'items') {
+                res[key] = this.handlerSchemas(value)
+            } else if (key === 'properties') {
+                const properties = {} as Record<string, SchemaObject>
 
-            return res as Schemas
+                for (const [name, property] of Object.entries(value)) {
+                    properties[name] = await this.handlerSchemas(property as SchemasOrReference)
+                }
+
+                res[key] = properties
+            } else {
+                res[key] = value
+            }
         }
 
-        return processRecursiveSchemas(schema)
+        return res as SchemaObject
     }
 }
